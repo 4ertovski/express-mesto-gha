@@ -7,7 +7,7 @@ const checkCard = (card, res) => {
   }
   return res
     .status(ERROR_NOT_FOUND)
-    .send({ message: 'Карточка с указанным _id не найдена.' });
+    .send({ message: 'Карточка с указанным _id не найдена.' });
 };
 
 const getCards = (req, res) => {
@@ -50,13 +50,13 @@ const deleteCard = (req, res) => {
       if (card.deletedCount === 0) {
         return res
           .status(ERROR_NOT_FOUND)
-          .send({ message: 'Карточка с указанным _id не найдена.' });
+          .send({ message: 'Карточка с указанным _id не найдена.' });
       }
       return res.send({ message: 'Карточка удалена' });
     })
     .catch((error) => {
       if (error.name === 'CastError') {
-        return res.status(ERROR_CODE).send({ message: 'Некорректный _id' });
+        return res.status(ERROR_CODE).send({ message: 'Некорректный _id' });
       }
       return res
         .status(ERROR_DEFAULT)
@@ -76,7 +76,7 @@ const likeCard = (req, res) => {
     .then((card) => checkCard(card, res))
     .catch((error) => {
       if (error.name === 'CastError') {
-        return res.status(ERROR_CODE).send({ message: 'Некорректный _id' });
+        return res.status(ERROR_CODE).send({ message: 'Некорректный _id' });
       }
       return res
         .status(ERROR_DEFAULT)
@@ -96,7 +96,7 @@ const dislikeCard = (req, res) => {
     .then((card) => checkCard(card, res))
     .catch((error) => {
       if (error.name === 'CastError') {
-        return res.status(ERROR_CODE).send({ message: 'Некорректный _id' });
+        return res.status(ERROR_CODE).send({ message: 'Некорректный _id' });
       }
       return res
         .status(ERROR_DEFAULT)

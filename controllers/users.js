@@ -7,7 +7,7 @@ const checkUser = (user, res) => {
   }
   return res
     .status(ERROR_NOT_FOUND)
-    .send({ message: 'Пользователь по указанному _id не найден' });
+    .send({ message: 'Пользователь по указанному _id не найден' });
 };
 
 const getUsers = (req, res) => {
@@ -46,7 +46,7 @@ const getUserById = (req, res) => {
     .then((user) => checkUser(user, res))
     .catch((error) => {
       if (error.name === 'CastError') {
-        return res.status(ERROR_CODE).send({ message: 'Некорректный _id' });
+        return res.status(ERROR_CODE).send({ message: 'Некорректный _id' });
       }
       return res
         .status(ERROR_DEFAULT)
