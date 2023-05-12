@@ -47,7 +47,7 @@ const getUserById = (req, res) => {
         return res.status(ERROR_CODE).send({ message: 'Некорректный _id' });
       }
       return res
-        .status(ERROR_CODE)
+        .status(ERROR_DEFAULT)
         .send({ message: 'На сервере произошла ошибка' });
     });
 };
@@ -63,13 +63,13 @@ const editProfile = (req, res) => {
   )
     .then((user) => checkUser(user, res))
     .catch((error) => {
-      if (error.name === 'CastError') {
+      if (error.name === 'CastError' || error.name === 'ValidationError') {
         return res.status(ERROR_CODE).send({
           message: 'Переданы некорректные данные при обновлении профиля.',
         });
       }
       return res
-        .status(ERROR_CODE)
+        .status(ERROR_DEFAULT)
         .send({ message: 'На сервере произошла ошибка' });
     });
 };
@@ -81,13 +81,13 @@ const updateAvatar = (req, res) => {
   User.findByIdAndUpdate(owner, avatar, { new: true, runValidators: true })
     .then((user) => checkUser(user, res))
     .catch((error) => {
-      if (error.name === 'CastError') {
+      if (error.name === 'CastError' || error.name === 'ValidationError') {
         return res.status(ERROR_CODE).send({
           message: 'Переданы некорректные данные при обновлении аватара.',
         });
       }
       return res
-        .status(ERROR_CODE)
+        .status(ERROR_DEFAULT)
         .send({ message: 'На сервере произошла ошибка' });
     });
 };
