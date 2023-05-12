@@ -12,7 +12,7 @@ const checkUser = (user, res) => {
 
 const getUsers = (req, res) => {
   User.find({})
-    .then((users) => res.send({ data: users }))
+    .then((users) => res.send(users))
     .catch(() => {
       res
         .status(ERROR_DEFAULT)
@@ -24,9 +24,7 @@ const createUser = (req, res) => {
   const { name, about, avatar } = req.body;
 
   User.create({ name, about, avatar })
-    .then((newUser) => {
-      res.send(newUser);
-    })
+    .then((newUser) => res.status(201).send(newUser))
     .catch((error) => {
       if (error.name === 'ValidationError') {
         return res.status(ERROR_CODE).send({
@@ -65,7 +63,7 @@ const editProfile = (req, res) => {
   )
     .then((user) => checkUser(user, res))
     .catch((error) => {
-      if (error.name === 'ValidationError') {
+      if (error.name === 'CastError') {
         return res.status(ERROR_CODE).send({
           message: 'Переданы некорректные данные при обновлении профиля.',
         });
@@ -83,7 +81,7 @@ const updateAvatar = (req, res) => {
   User.findByIdAndUpdate(owner, avatar, { new: true, runValidators: true })
     .then((user) => checkUser(user, res))
     .catch((error) => {
-      if (error.name === 'ValidationError') {
+      if (error.name === 'CastError') {
         return res.status(ERROR_CODE).send({
           message: 'Переданы некорректные данные при обновлении аватара.',
         });

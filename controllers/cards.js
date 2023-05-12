@@ -27,9 +27,7 @@ const createCard = (req, res) => {
   const { name, link } = req.body;
 
   Card.create({ name, link, owner: _id })
-    .then((newCard) => {
-      res.send(newCard);
-    })
+    .then((newCard) => res.status(201).send(newCard))
     .catch((error) => {
       if (error.name === 'ValidationError') {
         return res.status(ERROR_CODE).send({
@@ -71,7 +69,7 @@ const likeCard = (req, res) => {
   Card.findByIdAndUpdate(
     cardId,
     { $addToSet: { likes: owner } },
-    { new: true, runValidators: true },
+    /* { new: true, runValidators: true }, */
   )
     .then((card) => checkCard(card, res))
     .catch((error) => {
@@ -91,7 +89,7 @@ const dislikeCard = (req, res) => {
   Card.findByIdAndUpdate(
     cardId,
     { $pull: { likes: owner } },
-    { new: true, runValidators: true },
+    /* { new: true, runValidators: true }, */
   )
     .then((card) => checkCard(card, res))
     .catch((error) => {
