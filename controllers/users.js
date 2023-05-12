@@ -47,7 +47,7 @@ const getUserById = (req, res) => {
         return res.status(ERROR_CODE).send({ message: 'Некорректный _id' });
       }
       return res
-        .status(ERROR_DEFAULT)
+        .status(ERROR_CODE)
         .send({ message: 'На сервере произошла ошибка' });
     });
 };
@@ -69,7 +69,7 @@ const editProfile = (req, res) => {
         });
       }
       return res
-        .status(ERROR_DEFAULT)
+        .status(ERROR_CODE)
         .send({ message: 'На сервере произошла ошибка' });
     });
 };
@@ -87,7 +87,7 @@ const updateAvatar = (req, res) => {
         });
       }
       return res
-        .status(ERROR_DEFAULT)
+        .status(ERROR_CODE)
         .send({ message: 'На сервере произошла ошибка' });
     });
 };
