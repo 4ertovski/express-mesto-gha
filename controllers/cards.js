@@ -69,6 +69,7 @@ const likeCard = (req, res) => {
   Card.findByIdAndUpdate(
     cardId,
     { $addToSet: { likes: owner } },
+    { new: true },
     /* { new: true, runValidators: true }, */
   )
     .then((card) => checkCard(card, res))
@@ -89,6 +90,7 @@ const dislikeCard = (req, res) => {
   Card.findByIdAndUpdate(
     cardId,
     { $pull: { likes: owner } },
+    { new: true },
     /* { new: true, runValidators: true }, */
   )
     .then((card) => checkCard(card, res))
