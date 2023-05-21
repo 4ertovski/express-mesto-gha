@@ -1,32 +1,52 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
 const helmet = require('helmet');
-/* const cards = require('./routes/cards');
-const users = require('./routes/users'); */
+const rateLimit = require('express-rate-limit');
+const bodyParser = require('body-parser');
+const { errors } = require('celebrate');
 const router = require('./routes');
+const auth = require('./middlewares/auth');
 
-const { PORT = 3000 } = process.env;
 const app = express();
 
-// подключаемся к серверу mongo
-mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
-
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+const { validationCreateUser, validationLogin } = require('./middlewares/validation');
 
+const { PORT = 3000, MONGO_URL = 'mongodb://127.0.0.1:27017/mestodb' } = process.env;
+const { createUsers, login } = require('./controllers/auth');
+
+app.post('/signin', validationLogin, login);
+app.post('/signup', validationCreateUser, createUsers);
+app.use(auth);
+app.use(router);
 app.use(helmet());
-
-app.use((req, res, next) => {
-  req.user = { _id: '645d491a601a0da5604fa9e0' };
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use(limiter);
+async function connect() {
+  try {
+    await mongoose.set('strictQuery', false);
+    await mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
+    console.log(`App connected ${MONGO_URL}`);
+    await app.listen(PORT);
+    console.log(`App listening on port ${PORT}`);
+  } catch (err) {
+    console.log(err);
+  }
+}
+app.use(errors());
+app.use((err, req, res, next) => {
+  const { statusCode = 500, message } = err;
+  res.status(statusCode).send({
+    message: statusCode === 500
+      ? 'На сервере произошла ошибка'
+      : message,
+  });
   next();
 });
-
-app.use(router);
-
-/* app.use('/cards', cards);
-app.use('/users', users); */
-
-app.listen(PORT, () => {
-  console.log(`start server on port ${PORT}`);
-});
+// подключаем роуты
+connect();

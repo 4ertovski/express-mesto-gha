@@ -1,114 +1,69 @@
-const { Joi } = require('celebrate');
+const { celebrate, Joi } = require('celebrate');
+const validation = require('validator');
+const BadRequestError = require('../errors/BadRequestError');
 const { urlRegExp } = require('../utils/variables');
 
-const signinValidation = {
+const validationUrl = (url) => {
+  const validate = validation.isURL(url);
+  if (validate) {
+    return url;
+  }
+  throw new BadRequestError('Некорректный адрес URL');
+};
+// валидация ID
+const validationID = (id) => {
+  if (urlRegExp.test(id)) {
+    return id;
+  }
+  throw new BadRequestError('Передан некорретный id.');
+};
+
+// аутенфикация
+module.exports.validationLogin = celebrate({
   body: Joi.object().keys({
-    email: Joi.string().required().email().messages({
-      'string.email': 'Введена некорректная почта',
-      'any.required': 'Почта не должна быть пустой',
-    }),
-    password: Joi.string().required().min(8).messages({
-      'string.password': 'Пароль должен быть не менее 8 символов',
-      'any.required': 'Пароль не должен быть пустым',
-    }),
+    email: Joi.string().required().email(),
+    password: Joi.string().required(),
   }),
-};
-
-const signupValidation = {
+});
+// авторизация
+module.exports.validationCreateUser = celebrate({
   body: Joi.object().keys({
-    email: Joi.string().required().email().messages({
-      'string.email': 'Введена некорректная почта',
-      'any.required': 'Почта не должна быть пустой',
-    }),
-    password: Joi.string().required().min(8).messages({
-      'string.password': 'Пароль должен быть не менее 8 символов',
-      'any.required': 'Пароль не должен быть пустым',
-    }),
-    name: Joi.string().min(2).max(30).messages({
-      'string.min': 'Поле "имя" не должно быть меньше 2 символов',
-      'string.max': 'Поле "имя" не должно быть больше 30 символов',
-      'any.required': 'Поле "имя" не должно быть пустым',
-    }),
-    about: Joi.string().min(2).max(30).messages({
-      'string.min': 'Поле "род деятельности" не должно быть меньше 2 символов',
-      'string.max': 'Поле "род деятельности" не должно быть больше 30 символов',
-      'any.required': 'Поле "род деятельности" не должно быть пустым',
-    }),
-    avatar: Joi.string().regex(urlRegExp).message('Невалидная ссылка'),
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string().custom(validationUrl),
+    email: Joi.string().required().email(),
+    password: Joi.string().required(),
   }),
-};
-
-const getUserByIdValidation = {
-  params: Joi.object({
-    userId: Joi.string().hex().length(24).message('Некорректный id'),
+});
+// обновление данных пользователя
+module.exports.validationUpdateUser = celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().min(2).max(30).required(),
+    about: Joi.string().min(2).max(30).required(),
   }),
-};
-
-const editProfileValidation = {
-  body: Joi.object({
-    name: Joi.string().min(2).max(30).messages({
-      'string.min': 'Поле "имя" не должно быть меньше 2 символов',
-      'string.max': 'Поле "имя" не должно быть больше 30 символов',
-      'any.required': 'Поле "имя" не должно быть пустым',
-    }),
-    about: Joi.string().min(2).max(30).messages({
-      'string.min': 'Поле "род деятельности" не должно быть меньше 2 символов',
-      'string.max': 'Поле "род деятельности" не должно быть больше 30 символов',
-      'any.required': 'Поле "род деятельности" не должно быть пустым',
-    }),
+});
+// обновление аватара
+module.exports.validationUpdateAvatar = celebrate({
+  body: Joi.object().keys({
+    avatar: Joi.string().required().custom(validationUrl),
   }),
-};
-
-const updateAvatarValidation = {
-  body: Joi.object({
-    avatar: Joi.string().regex(urlRegExp).message('Невалидная ссылка'),
+});
+// поиск по ID
+module.exports.validationUserId = celebrate({
+  params: Joi.object().keys({
+    userId: Joi.string().required().custom(validationID),
   }),
-};
-
-const createCardValidation = {
-  body: Joi.object({
-    name: Joi.string()
-      .min(2)
-      .max(30)
-      .messages({
-        'string.min': 'Название карточки не должно быть меньше 2 символов',
-        'string.max': 'Название карточки не должно быть больше 30 символов',
-        'any.required': 'Название карточки не должно быть пустым',
-      })
-      .required(),
-    link: Joi.string()
-      .regex(urlRegExp)
-      .messages({
-        'string.dataUri': 'Невалидная ссылка',
-        'any.required': 'Название карточки не должно быть пустым',
-      })
-      .required(),
+});
+// создание карточки
+module.exports.validationCreateCard = celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().min(2).max(30).required(),
+    link: Joi.string().required().custom(validationUrl),
   }),
-};
-
-const deleteCardValidation = {
-  params: Joi.object({
-    cardId: Joi.string().hex().length(24).messages({
-      'string.hex': 'Некорректный id',
-    }),
+});
+// поиск карточки по Id
+module.exports.validationCardById = celebrate({
+  params: Joi.object().keys({
+    cardId: Joi.string().required().custom(validationID),
   }),
-};
-
-const likeCardValidation = {
-  params: Joi.object({
-    cardId: Joi.string().hex().length(24).messages({
-      'string.hex': 'Некорректный id',
-    }),
-  }),
-};
-
-module.exports = {
-  getUserByIdValidation,
-  editProfileValidation,
-  updateAvatarValidation,
-  signinValidation,
-  signupValidation,
-  createCardValidation,
-  deleteCardValidation,
-  likeCardValidation,
-};
+});
