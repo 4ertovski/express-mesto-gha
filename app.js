@@ -8,7 +8,8 @@ const auth = require('./middlewares/auth');
 const { validationCreateUser, validationLogin } = require('./middlewares/validation');
 const { createUsers, login } = require('./controllers/auth');
 
-const { PORT = 3000, MONGO_URL = 'mongodb://localhost:27017/mestodb' } = process.env;
+const { PORT = 3000 } = process.env;
+mongoose.connect('mongodb://localhost:27017/mestodb');
 
 const app = express();
 
@@ -20,15 +21,21 @@ app.use(router);
 app.use(helmet());
 app.use(errors());
 app.use((err, req, res, next) => {
+  console.log(err);
   const { statusCode = 500, message } = err;
+
   res.status(statusCode).send({
-    message: statusCode === 500
-      ? 'На сервере произошла ошибка'
-      : message,
+    message: statusCode === 500 ? 'На сервере произошла ошибка' : message,
   });
+
   next();
 });
-async function start() {
+
+app.listen(PORT, () => {
+  console.log(`start server on port ${PORT}`);
+});
+
+/* async function start() {
   try {
     await mongoose.connect(MONGO_URL);
     await app.listen(PORT);
@@ -37,4 +44,4 @@ async function start() {
   }
 }
 start()
-  .then(() => console.log(`App has been successfully started!\n${MONGO_URL}\nPort: ${PORT}`));
+  .then(() => console.log(`App has been successfully started!\n${MONGO_URL}\nPort: ${PORT}`)); */

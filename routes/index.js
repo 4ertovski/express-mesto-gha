@@ -9,6 +9,5 @@ router.use('/cards', cardsRouter);
 router.use((req, res, next) => {
   next(new NotFoundError('Такая страница не существует'));
 });
-/* router.use(express.json()); */
 
 module.exports = router;
