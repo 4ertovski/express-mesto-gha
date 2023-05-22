@@ -1,5 +1,3 @@
-const express = require('express');
-
 const router = require('express').Router();
 
 const usersRouter = require('./users');
@@ -11,6 +9,6 @@ router.use('/cards', cardsRouter);
 router.use((req, res, next) => {
   next(new NotFoundError('Такая страница не существует'));
 });
-router.use(express.json());
+/* router.use(express.json()); */
 
 module.exports = router;
