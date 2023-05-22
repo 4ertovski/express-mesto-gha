@@ -1,10 +1,10 @@
 const { celebrate, Joi } = require('celebrate');
-const isURL = require('validator/lib/isURL');
+const validator = require('validator');
 const BadRequestError = require('../errors/BadRequestError');
 const { urlRegExp } = require('../utils/variables');
 
 const validationUrl = (url) => {
-  const validate = isURL(url);
+  const validate = validator.isURL(url);
   if (validate) {
     return url;
   }
