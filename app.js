@@ -12,7 +12,7 @@ const app = express();
 app.use(bodyParser.json());
 const { validationCreateUser, validationLogin } = require('./middlewares/validation');
 
-const { PORT = 3000, MONGO_URL = 'mongodb://127.0.0.1:27017/mestodb' } = process.env;
+const { PORT = 3000, MONGO_URL = 'mongodb://localhost:27017/mestodb' } = process.env;
 const { createUsers, login } = require('./controllers/auth');
 
 app.post('/signin', validationLogin, login);
@@ -30,7 +30,7 @@ app.use(limiter);
 async function connect() {
   try {
     await mongoose.set('strictQuery', false);
-    await mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
+    await mongoose.connect('mongodb://localhost:27017/mestodb');
     console.log(`App connected ${MONGO_URL}`);
     await app.listen(PORT);
     console.log(`App listening on port ${PORT}`);
