@@ -15,14 +15,11 @@ const {
 } = require('./controllers/auth');
 const errorHandler = require('./middlewares/errorHandler');
 
-const {
-  MONGO_URL = 'mongodb://127.0.0.1:27017/mestodb',
-  PORT = 3000,
-} = process.env;
+const { PORT = 3000 } = process.env;
+mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
 
 const app = express();
 app.use(bodyParser.json());
-
 app.post('/signin', loginValidation, login);
 app.post('/signup', createUserValidation, createUser);
 app.use(auth);
@@ -31,15 +28,4 @@ app.use(helmet());
 app.use(errors());
 
 app.use(errorHandler);
-
-async function start() {
-  try {
-    await mongoose.connect(MONGO_URL);
-    await app.listen(PORT);
-  } catch (err) {
-    console.log(err);
-  }
-}
-
-start()
-  .then(() => console.log(`App has been successfully started!\n${MONGO_URL}\nPort: ${PORT}`));
+app.listen(PORT);
