@@ -1,16 +1,23 @@
-const usersRouter = require('express').Router();
+const userRoutes = require('express')
+  .Router();
+
 const {
-  createUser,
   getUsers,
   getUserById,
-  editProfile,
+  getUser,
+  updateUser,
   updateAvatar,
 } = require('../controllers/users');
 
-usersRouter.get('/', getUsers);
-usersRouter.get('/:userId', getUserById);
-usersRouter.post('/', createUser);
-usersRouter.patch('/me', editProfile);
-usersRouter.patch('/me/avatar', updateAvatar);
+const {
+  updateUserValidation,
+  updateAvatarValidation,
+  userIdValidation,
+} = require('../middlewares/validation');
 
-module.exports = usersRouter;
+userRoutes.get('/', getUsers);
+userRoutes.get('/me', getUser);
+userRoutes.get('/:userId', userIdValidation, getUserById);
+userRoutes.patch('/me', updateUserValidation, updateUser);
+userRoutes.patch('/me/avatar', updateAvatarValidation, updateAvatar);
+module.exports = userRoutes;

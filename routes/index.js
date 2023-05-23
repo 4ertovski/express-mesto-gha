@@ -1,13 +1,14 @@
-const router = require('express').Router();
-const usersRouter = require('./users');
+const router = require('express')
+  .Router();
+
 const cardsRouter = require('./cards');
+const usersRouter = require('./users');
+const NotFoundError = require('../errors/NotFoundError');
 
 router.use('/users', usersRouter);
 router.use('/cards', cardsRouter);
-router.use((req, res) => {
-  res.status(404).send({
-    message: 'Not Found',
-  });
+router.use((request, response, next) => {
+  next(new NotFoundError('Такая страница не существует'));
 });
 
 module.exports = router;

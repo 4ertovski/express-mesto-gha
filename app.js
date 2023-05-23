@@ -1,32 +1,45 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
+const { errors } = require('celebrate');
 const helmet = require('helmet');
-/* const cards = require('./routes/cards');
-const users = require('./routes/users'); */
+const bodyParser = require('body-parser');
 const router = require('./routes');
+const {
+  createUserValidation,
+  loginValidation,
+} = require('./middlewares/validation');
+const auth = require('./middlewares/auth');
+const {
+  createUser,
+  login,
+} = require('./controllers/auth');
+const errorHandler = require('./middlewares/errorHandler');
 
-const { PORT = 3000 } = process.env;
+const {
+  MONGO_URL = 'mongodb://127.0.0.1:27017/mestodb',
+  PORT = 3000,
+} = process.env;
+
 const app = express();
-
-// подключаемся к серверу mongo
-mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
-
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use(helmet());
-
-app.use((req, res, next) => {
-  req.user = { _id: '645d491a601a0da5604fa9e0' };
-  next();
-});
-
+app.post('/signin', loginValidation, login);
+app.post('/signup', createUserValidation, createUser);
+app.use(auth);
 app.use(router);
+app.use(helmet());
+app.use(errors());
 
-/* app.use('/cards', cards);
-app.use('/users', users); */
+app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`start server on port ${PORT}`);
-});
+async function start() {
+  try {
+    await mongoose.connect(MONGO_URL);
+    await app.listen(PORT);
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+start()
+  .then(() => console.log(`App has been successfully started!\n${MONGO_URL}\nPort: ${PORT}`));
