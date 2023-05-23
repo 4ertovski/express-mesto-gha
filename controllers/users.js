@@ -6,7 +6,7 @@ const userSchema = require('../models/user');
 module.exports.getUsers = (req, res, next) => {
   userSchema
     .find({})
-    .then((users) => res.send(users))
+    .then((users) => res.status(200).send(users))
     .catch(next);
 };
 // ищем по ID
@@ -17,7 +17,7 @@ module.exports.getUserById = (req, res, next) => {
       if (!user) {
         throw new NotFound('Пользователь не найден');
       }
-      res.send({ data: user });
+      res.status(200).send(user);
     })
     .catch((err) => {
       if (err.name === 'CastError') {

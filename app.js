@@ -9,25 +9,28 @@ const { validationCreateUser, validationLogin } = require('./middlewares/validat
 const { createUsers, login } = require('./controllers/auth');
 
 const { PORT = 3000 } = process.env;
-mongoose.connect('mongodb://localhost:27017/mestodb');
+mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
 
 const app = express();
 
 app.use(bodyParser.json());
-app.post('/signin', validationLogin, login);
 app.post('/signup', validationCreateUser, createUsers);
+app.post('/signin', validationLogin, login);
+
 app.use(auth);
 app.use(router);
 app.use(helmet());
 app.use(errors());
 app.use((err, req, res, next) => {
-  console.log(err);
-  const { statusCode = 500, message } = err;
+  // eslint-disable-next-line no-console
+  console.log(err.stack || err);
+  const status = err.statusCode || 500;
+  const message = err.message || 'На сервере произошла ошибка.';
 
-  res.status(statusCode).send({
-    message: statusCode === 500 ? 'На сервере произошла ошибка' : message,
+  res.status(status).send({
+    err,
+    message,
   });
-
   next();
 });
 
