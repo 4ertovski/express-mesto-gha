@@ -23,7 +23,6 @@
     "eslint": "^8.39.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.27.5",
-    "jsonwebtoken": "^9.0.0",
     "nodemon": "^2.0.22"
   },
   "dependencies": {
@@ -34,6 +33,7 @@
     "helmet": "^7.0.0",
     "joi": "^17.9.2",
     "mongoose": "^7.1.0",
+    "jsonwebtoken": "^9.0.0",
     "validator": "^13.9.0"
   }
 }

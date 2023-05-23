@@ -1,10 +1,9 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const userSchema = require('../models/user');
-const BadRequestError = require('../errors/BadRequestError'); // 400
+const BadRequest = require('../errors/BadRequestError'); // 400
 const ConflictError = require('../errors/ConflictError'); // 409
-const { JWT_SECRET } = require('../utils/variables');
+
 // создаем пользователя
 module.exports.createUsers = (req, res, next) => {
   const {
@@ -28,7 +27,7 @@ module.exports.createUsers = (req, res, next) => {
           return next(new ConflictError('Пользователь с таким email уже существует'));
         }
         if (err.name === 'ValidationError') {
-          return next(new BadRequestError('Некорректные данные'));
+          return next(new BadRequest('Некорректные данные'));
         }
         next(err);
       });
@@ -41,7 +40,7 @@ module.exports.login = (req, res, next) => {
   return userSchema
     .findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+      const token = jwt.sign({ _id: user._id }, 'some-secret-key', {
         expiresIn: '7d',
       });
       res.send({ token });

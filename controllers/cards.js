@@ -1,8 +1,8 @@
 const cardSchema = require('../models/card');
-const BadRequestError = require('../errors/BadRequestError');
-const NotFoundError = require('../errors/NotFoundError');
-const ForbiddenError = require('../errors/ForbiddenError');
-
+const NotFound = require('../errors/NotFoundError'); // 404
+const CurrentErr = require('../errors/ForbiddenError'); // 403
+const BadRequest = require('../errors/BadRequestError'); // 400
+// возвращаем все карточки
 module.exports.getCards = (req, res, next) => {
   cardSchema
     .find({})
@@ -18,7 +18,7 @@ module.exports.createCards = (req, res, next) => {
     .then((card) => res.status(201).send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new BadRequestError('Переданы некорректные данные при создании карточки'));
+        next(new BadRequest('Переданы некорректные данные при создании карточки'));
       } else {
         next(err);
       }
@@ -30,10 +30,10 @@ module.exports.deleteCard = (req, res, next) => {
   return cardSchema.findById(cardId)
     .then((card) => {
       if (!card) {
-        throw new NotFoundError('Пользователь не найден');
+        throw new NotFound('Пользователь не найден');
       }
       if (!card.owner.equals(req.user._id)) {
-        return next(new ForbiddenError('Вы не можете удалить чужую карточку'));
+        return next(new CurrentErr('Вы не можете удалить чужую карточку'));
       }
       return card.deleteOne().then(() => res.send({ message: 'Карточка успешно удалена' }));
     })
@@ -49,13 +49,13 @@ module.exports.getLikes = (req, res, next) => {
     )
     .then((card) => {
       if (!card) {
-        throw new NotFoundError('Пользователь не найден');
+        throw new NotFound('Пользователь не найден');
       }
       res.send({ data: card });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        return next(new BadRequestError('Переданы некорректные данные для постановки лайка'));
+        return next(new BadRequest('Переданы некорректные данные для постановки лайка'));
       }
       return next(err);
     });
@@ -70,13 +70,13 @@ module.exports.deleteLikes = (req, res, next) => {
     )
     .then((card) => {
       if (!card) {
-        throw new NotFoundError('Пользователь не найден');
+        throw new NotFound('Пользователь не найден');
       }
       res.send({ data: card });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        return next(new BadRequestError('Переданы некорректные данные для постановки лайка'));
+        return next(new BadRequest('Переданы некорректные данные для постановки лайка'));
       }
       return next(err);
     });

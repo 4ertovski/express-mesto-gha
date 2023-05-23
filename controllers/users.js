@@ -1,7 +1,6 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
+const BadRequest = require('../errors/BadRequestError'); // 400
+const NotFound = require('../errors/NotFoundError'); // 404
 const userSchema = require('../models/user');
-const NotFoundError = require('../errors/NotFoundError'); // 404
-const BadRequestError = require('../errors/BadRequestError'); // 400
 
 // ищем всех пользователей
 module.exports.getUsers = (req, res, next) => {
@@ -16,13 +15,13 @@ module.exports.getUserById = (req, res, next) => {
   userSchema.findById(userId)
     .then((user) => {
       if (!user) {
-        throw new NotFoundError('Пользователь не найден');
+        throw new NotFound('Пользователь не найден');
       }
       res.send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new BadRequestError('Передан некорретный Id'));
+        next(new BadRequest('Передан некорретный Id'));
         return;
       }
       next(err);
@@ -39,13 +38,13 @@ module.exports.updateUser = (req, res, next) => {
     )
     .then((user) => {
       if (!user) {
-        throw new NotFoundError('Пользователь не найден');
+        throw new NotFound('Пользователь не найден');
       }
       res.status(200).send(user);
     })
     .catch((err) => {
       if (err.name === 'ValidationError' || err.name === 'CastError') {
-        next(BadRequestError('Переданы некорректные данные при обновлении профиля.'));
+        next(BadRequest('Переданы некорректные данные при обновлении профиля.'));
       } else next(err);
     });
 };
@@ -61,7 +60,7 @@ module.exports.updateAvatar = (req, res, next) => {
     .then((user) => res.status(200).send(user))
     .catch((err) => {
       if (err.name === 'ValidationError' || err.name === 'CastError') {
-        next(new BadRequestError('Переданы некорректные данные при обновлении профиля.'));
+        next(new BadRequest('Переданы некорректные данные при обновлении профиля.'));
       } else next(err);
     });
 };
@@ -70,15 +69,15 @@ module.exports.getCurrentUser = (req, res, next) => {
   userSchema.findById(req.user._id)
     .then((user) => {
       if (!user) {
-        throw new NotFoundError('Пользователь не найден');
+        throw new NotFound('Пользователь не найден');
       }
       res.status(200).send(user);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(BadRequestError('Переданы некорректные данные'));
+        next(BadRequest('Переданы некорректные данные'));
       } else if (err.message === 'NotFound') {
-        next(new NotFoundError('Пользователь не найден'));
+        next(new NotFound('Пользователь не найден'));
       } else next(err);
     });
 };
