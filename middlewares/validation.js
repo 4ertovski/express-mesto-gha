@@ -1,7 +1,6 @@
 const { celebrate, Joi } = require('celebrate');
 const validator = require('validator');
-const BadRequest = require('../errors/BadRequestError'); // 404
-const { urlRegExp } = require('../utils/variables');
+const BadRequest = require('../errors/BadRequestError'); // 400
 // валидания ссылок
 const validationUrl = (url) => {
   const validate = validator.isUrl(url);
@@ -12,7 +11,7 @@ const validationUrl = (url) => {
 };
 // валидация ID
 const validationID = (id) => {
-  if (urlRegExp.test(id)) {
+  if (/^[0-9a-fA-F]{24}$/.test(id)) {
     return id;
   }
   throw new BadRequest('Передан некорретный id.');

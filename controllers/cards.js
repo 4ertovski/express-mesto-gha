@@ -12,9 +12,9 @@ module.exports.getCards = (req, res, next) => {
 // создаем карточку
 module.exports.createCards = (req, res, next) => {
   const { name, link } = req.body;
-  /* const owner = req.user._id; */
+  const owner = req.user._id;
   cardSchema
-    .create({ name, link, owner: req.user._id })
+    .create({ name, link, owner })
     .then((card) => res.status(201).send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -35,7 +35,7 @@ module.exports.deleteCard = (req, res, next) => {
       if (!card.owner.equals(req.user._id)) {
         return next(new CurrentErr('Вы не можете удалить чужую карточку'));
       }
-      return card.deleteOne().then(() => res.send({ message: 'Карточка успешно удалена' }));
+      return card.remove().then(() => res.send({ message: 'Карточка успешно удалена' }));
     })
     .catch(next);
 };

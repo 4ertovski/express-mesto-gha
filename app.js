@@ -5,35 +5,41 @@ const bodyParser = require('body-parser');
 const { errors } = require('celebrate');
 const router = require('./routes');
 const auth = require('./middlewares/auth');
-const { validationCreateUser, validationLogin } = require('./middlewares/validation');
-const { createUsers, login } = require('./controllers/auth');
-
-const { PORT = 3000 } = process.env;
-mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
 
 const app = express();
 
 app.use(bodyParser.json());
-app.post('/signup', validationCreateUser, createUsers);
-app.post('/signin', validationLogin, login);
+const { validationCreateUser, validationLogin } = require('./middlewares/validation');
 
+const { PORT = 3000, MONGO_URL = 'mongodb://localhost:27017/mestodb' } = process.env;
+const { createUsers, login } = require('./controllers/auth');
+
+app.post('/signin', validationLogin, login);
+app.post('/signup', validationCreateUser, createUsers);
 app.use(auth);
 app.use(router);
 app.use(helmet());
+
+async function connect() {
+  try {
+    await mongoose.set('strictQuery', false);
+    await mongoose.connect('mongodb://localhost:27017/mestodb');
+    console.log(`App connected ${MONGO_URL}`);
+    await app.listen(PORT);
+    console.log(`App listening on port ${PORT}`);
+  } catch (err) {
+    console.log(err);
+  }
+}
 app.use(errors());
 app.use((err, req, res, next) => {
-  // eslint-disable-next-line no-console
-  console.log(err.stack || err);
-  const status = err.statusCode || 500;
-  const message = err.message || 'На сервере произошла ошибка.';
-
-  res.status(status).send({
-    err,
-    message,
+  const { statusCode = 500, message } = err;
+  res.status(statusCode).send({
+    message: statusCode === 500
+      ? 'На сервере произошла ошибка'
+      : message,
   });
   next();
 });
-
-app.listen(PORT, () => {
-  console.log(`start server on port ${PORT}`);
-});
+// подключаем роуты
+connect();
