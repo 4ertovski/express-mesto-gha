@@ -1,83 +1,106 @@
-const BadRequest = require('../errors/BadRequestError'); // 400
-const NotFound = require('../errors/NotFoundError'); // 404
 const userSchema = require('../models/user');
+const NotFoundError = require('../errors/NotFoundError');
+const BadRequestError = require('../errors/BadRequestError');
 
-// ищем всех пользователей
-module.exports.getUsers = (req, res, next) => {
+module.exports.getUsers = (request, response, next) => {
   userSchema
     .find({})
-    .then((users) => res.send(users))
+    .then((users) => response.send(users))
     .catch(next);
 };
-// ищем по ID
-module.exports.getUserById = (req, res, next) => {
-  const { userId } = req.params;
-  userSchema.findById(userId)
+
+module.exports.getUserById = (request, response, next) => {
+  const { userId } = request.params;
+
+  userSchema
+    .findById(userId)
     .then((user) => {
       if (!user) {
-        throw new NotFound('Пользователь не найден');
+        throw new NotFoundError('User cannot be found');
       }
-      res.send({ data: user });
+      response.send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new BadRequest('Передан некорретный Id'));
-        return;
+        return next(new BadRequestError('Incorrect id'));
       }
-      next(err);
+      return next(err);
     });
 };
-// обновить данные
-module.exports.updateUser = (req, res, next) => {
-  const { name, about } = req.body;
-  userSchema
-    .findByIdAndUpdate(
-      req.user._id,
-      { name, about },
-      { new: true, runValidators: true },
-    )
+
+module.exports.getUser = (request, response, next) => {
+  userSchema.findById(request.user._id)
     .then((user) => {
       if (!user) {
-        throw new NotFound('Пользователь не найден');
+        throw new NotFoundError('User cannot be found');
       }
-      res.status(200).send(user);
-    })
-    .catch((err) => {
-      if (err.name === 'ValidationError' || err.name === 'CastError') {
-        next(BadRequest('Переданы некорректные данные при обновлении профиля.'));
-      } else next(err);
-    });
-};
-// обновление аватара
-module.exports.updateAvatar = (req, res, next) => {
-  const { avatar } = req.body;
-  userSchema
-    .findByIdAndUpdate(
-      req.user._id,
-      { avatar },
-      { new: true, runValidators: true },
-    )
-    .then((user) => res.status(200).send(user))
-    .catch((err) => {
-      if (err.name === 'ValidationError' || err.name === 'CastError') {
-        next(new BadRequest('Переданы некорректные данные при обновлении профиля.'));
-      } else next(err);
-    });
-};
-// текущий пользователь
-module.exports.getCurrentUser = (req, res, next) => {
-  userSchema.findById(req.user._id)
-    .then((user) => {
-      if (!user) {
-        throw new NotFound('Пользователь не найден');
-      }
-      res.status(200).send(user);
+      response.status(200)
+        .send(user);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(BadRequest('Переданы некорректные данные'));
+        next(BadRequestError('Incorrect data'));
       } else if (err.message === 'NotFound') {
-        next(new NotFound('Пользователь не найден'));
-      } else next(err);
+        next(new NotFoundError('User cannot be found'));
+      } else {
+        next(err);
+      }
+    });
+};
+
+module.exports.updateUser = (request, response, next) => {
+  const {
+    name,
+    about,
+  } = request.body;
+
+  userSchema
+    .findByIdAndUpdate(
+      request.user._id,
+      {
+        name,
+        about,
+      },
+      {
+        new: true,
+        runValidators: true,
+      },
+    )
+    .then((user) => {
+      if (!user) {
+        throw new NotFoundError('User cannot be found');
+      }
+      response.status(200)
+        .send(user);
+    })
+    .catch((err) => {
+      if (err.name === 'ValidationError' || err.name === 'CastError') {
+        next(BadRequestError('Incorrect data'));
+      } else {
+        next(err);
+      }
+    });
+};
+
+module.exports.updateAvatar = (request, response, next) => {
+  const { avatar } = request.body;
+
+  userSchema
+    .findByIdAndUpdate(
+      request.user._id,
+      { avatar },
+      {
+        new: true,
+        runValidators: true,
+      },
+    )
+    .then((user) => response.status(200)
+      .send(user))
+    .catch((err) => {
+      if (err.name === 'CastError' || err.name === 'ValidationError') {
+        next(new BadRequestError('Incorrect data'));
+      } else {
+        next(err);
+      }
     });
 };

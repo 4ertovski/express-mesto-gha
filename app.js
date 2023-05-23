@@ -1,45 +1,56 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const { errors } = require('celebrate');
 const helmet = require('helmet');
 const bodyParser = require('body-parser');
-const { errors } = require('celebrate');
 const router = require('./routes');
+const {
+  createUserValidation,
+  loginValidation,
+} = require('./middlewares/validation');
 const auth = require('./middlewares/auth');
+const {
+  createUser,
+  login,
+} = require('./controllers/auth');
+
+const {
+  MONGO_URL = 'mongodb://localhost:27017/mestodb',
+  PORT = 3000,
+} = process.env;
 
 const app = express();
-
 app.use(bodyParser.json());
-const { validationCreateUser, validationLogin } = require('./middlewares/validation');
 
-const { PORT = 3000, MONGO_URL = 'mongodb://localhost:27017/mestodb' } = process.env;
-const { createUsers, login } = require('./controllers/auth');
-
-app.post('/signin', validationLogin, login);
-app.post('/signup', validationCreateUser, createUsers);
+app.post('/signin', loginValidation, login);
+app.post('/signup', createUserValidation, createUser);
 app.use(auth);
 app.use(router);
 app.use(helmet());
+app.use(errors());
 
-async function connect() {
+app.use((error, request, response, next) => {
+  const {
+    status = 500,
+    message,
+  } = error;
+  response.status(status)
+    .send({
+      message: status === 500
+        ? 'На сервере произошла ошибка'
+        : message,
+    });
+  next();
+});
+
+async function start() {
   try {
-    await mongoose.set('strictQuery', false);
-    await mongoose.connect('mongodb://localhost:27017/mestodb');
-    console.log(`App connected ${MONGO_URL}`);
+    await mongoose.connect(MONGO_URL);
     await app.listen(PORT);
-    console.log(`App listening on port ${PORT}`);
   } catch (err) {
     console.log(err);
   }
 }
-app.use(errors());
-app.use((err, req, res, next) => {
-  const { statusCode = 500, message } = err;
-  res.status(statusCode).send({
-    message: statusCode === 500
-      ? 'На сервере произошла ошибка'
-      : message,
-  });
-  next();
-});
-// подключаем роуты
-connect();
+
+start()
+  .then(() => console.log(`App has been successfully started!\n${MONGO_URL}\nPort: ${PORT}`));

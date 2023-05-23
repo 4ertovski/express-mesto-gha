@@ -1,68 +1,101 @@
-const { celebrate, Joi } = require('celebrate');
-const validator = require('validator');
-const BadRequest = require('../errors/BadRequestError'); // 400
-// валидания ссылок
-const validationUrl = (url) => {
-  const validate = validator.isUrl(url);
-  if (validate) {
-    return url;
-  }
-  throw new BadRequest('Некорректный адрес URL');
-};
-// валидация ID
-const validationID = (id) => {
-  if (/^[0-9a-fA-F]{24}$/.test(id)) {
-    return id;
-  }
-  throw new BadRequest('Передан некорретный id.');
+const {
+  Joi,
+  celebrate,
+} = require('celebrate');
+const isUrl = require('validator/lib/isURL');
+const BadRequestError = require('../errors/BadRequestError');
+
+const urlValidation = (url) => {
+  if (isUrl(url)) return url;
+  throw new BadRequestError('Incorrect URL');
 };
 
-// аутенфикация
-module.exports.validationLogin = celebrate({
-  body: Joi.object().keys({
-    email: Joi.string().required().email(),
-    password: Joi.string().required(),
-  }),
+const IdValidation = (id) => {
+  const regex = /^[0-9a-fA-F]{24}$/;
+  if (regex.test(id)) return id;
+  throw new BadRequestError('Incorrect id');
+};
+
+module.exports.createUserValidation = celebrate({
+  body: Joi.object()
+    .keys({
+      name: Joi.string()
+        .min(2)
+        .max(30),
+      about: Joi.string()
+        .min(2)
+        .max(30),
+      email: Joi.string()
+        .required()
+        .email(),
+      avatar: Joi.string()
+        .custom(urlValidation),
+      password: Joi.string()
+        .required(),
+    }),
 });
-// авторизация
-module.exports.validationCreateUser = celebrate({
-  body: Joi.object().keys({
-    name: Joi.string().min(2).max(30),
-    about: Joi.string().min(2).max(30),
-    avatar: Joi.string().custom(validationUrl),
-    email: Joi.string().required().email(),
-    password: Joi.string().required(),
-  }),
+
+module.exports.cardByIdValidation = celebrate({
+  params: Joi.object()
+    .keys({
+      cardId: Joi.string()
+        .required()
+        .custom(IdValidation),
+    }),
 });
-// обновление данных пользователя
-module.exports.validationUpdateUser = celebrate({
-  body: Joi.object().keys({
-    name: Joi.string().min(2).max(30).required(),
-    about: Joi.string().min(2).max(30).required(),
-  }),
+
+module.exports.loginValidation = celebrate({
+  body: Joi.object()
+    .keys({
+      email: Joi.string()
+        .required()
+        .email(),
+      password: Joi.string()
+        .required(),
+    }),
 });
-// обновление аватара
+
 module.exports.validationUpdateAvatar = celebrate({
-  body: Joi.object().keys({
-    avatar: Joi.string().required().custom(validationUrl),
-  }),
+  body: Joi.object()
+    .keys({
+      avatar: Joi.string()
+        .required()
+        .custom(urlValidation),
+    }),
 });
-// поиск по ID
-module.exports.validationUserId = celebrate({
-  params: Joi.object().keys({
-    userId: Joi.string().required().custom(validationID),
-  }),
+
+module.exports.updateUserValidation = celebrate({
+  body: Joi.object()
+    .keys({
+      name: Joi.string()
+        .min(2)
+        .max(30)
+        .required(),
+      about: Joi.string()
+        .min(2)
+        .max(30)
+        .required(),
+    }),
 });
-// создание карточки
-module.exports.validationCreateCard = celebrate({
-  body: Joi.object().keys({
-    name: Joi.string().min(2).max(30).required(),
-    link: Joi.string().required().custom(validationUrl),
-  }),
+
+module.exports.createCardValidation = celebrate({
+  body: Joi.object()
+    .keys({
+      name: Joi.string()
+        .min(2)
+        .max(30)
+        .required(),
+      link: Joi.string()
+        .required()
+        .custom(urlValidation),
+    }),
 });
-// поиск карточки по Id
-module.exports.validationCardById = celebrate({
-  params: Joi.object().keys({
-    cardId: Joi.string().required().custom(validationID),
-  }),
+
+module.exports.userIdValidation = celebrate({
+  params: Joi.object()
+    .keys({
+      userId: Joi.string()
+        .required()
+        .custom(IdValidation),
+    }),
 });
