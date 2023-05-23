@@ -3,15 +3,16 @@ const bcrypt = require('bcryptjs');
 const userSchema = require('../models/user');
 const BadRequestError = require('../errors/BadRequestError');
 const ConflictError = require('../errors/ConflictError');
+const { JWT_SECRET } = require('../utils/variables');
 
-module.exports.createUser = (request, response, next) => {
+module.exports.createUser = (req, res, next) => {
   const {
     name,
     about,
     avatar,
     email,
     password,
-  } = request.body;
+  } = req.body;
   bcrypt.hash(password, 10)
     .then((hash) => {
       userSchema
@@ -22,7 +23,7 @@ module.exports.createUser = (request, response, next) => {
           email,
           password: hash,
         })
-        .then(() => response.status(201)
+        .then(() => res.status(201)
           .send(
             {
               data: {
@@ -35,10 +36,10 @@ module.exports.createUser = (request, response, next) => {
           ))
         .catch((err) => {
           if (err.code === 11000) {
-            return next(new ConflictError('The username with this email has already been registered'));
+            return next(new ConflictError('Пользователь с таким email уже существует'));
           }
           if (err.name === 'ValidationError') {
-            return next(new BadRequestError('Incorrect input'));
+            return next(new BadRequestError('Некорректные данные'));
           }
           return next(err);
         });
@@ -46,19 +47,19 @@ module.exports.createUser = (request, response, next) => {
     .catch(next);
 };
 
-module.exports.login = (request, response, next) => {
+module.exports.login = (req, res, next) => {
   const {
     email,
     password,
-  } = request.body;
+  } = req.body;
 
   return userSchema
     .findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, 'cat', {
-        expiresIn: '3d',
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+        expiresIn: '7d',
       });
-      response.send({ token });
+      res.send({ token });
     })
     .catch(next);
 };

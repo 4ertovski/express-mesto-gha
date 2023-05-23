@@ -2,61 +2,61 @@ const userSchema = require('../models/user');
 const NotFoundError = require('../errors/NotFoundError');
 const BadRequestError = require('../errors/BadRequestError');
 
-module.exports.getUsers = (request, response, next) => {
+module.exports.getUsers = (req, res, next) => {
   userSchema
     .find({})
-    .then((users) => response.send(users))
+    .then((users) => res.send(users))
     .catch(next);
 };
 
-module.exports.getUserById = (request, response, next) => {
-  const { userId } = request.params;
+module.exports.getUserById = (req, res, next) => {
+  const { userId } = req.params;
 
   userSchema
     .findById(userId)
     .then((user) => {
       if (!user) {
-        throw new NotFoundError('User cannot be found');
+        throw new NotFoundError('Пользователь не найден');
       }
-      response.send({ data: user });
+      res.send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        return next(new BadRequestError('Incorrect id'));
+        return next(new BadRequestError('Передан некорретный Id'));
       }
       return next(err);
     });
 };
 
-module.exports.getUser = (request, response, next) => {
-  userSchema.findById(request.user._id)
+module.exports.getUser = (req, res, next) => {
+  userSchema.findById(req.user._id)
     .then((user) => {
       if (!user) {
-        throw new NotFoundError('User cannot be found');
+        throw new NotFoundError('Пользователь не найден');
       }
-      response.status(200)
+      res.status(200)
         .send(user);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(BadRequestError('Incorrect data'));
+        next(BadRequestError('Переданы некорректные данные'));
       } else if (err.message === 'NotFound') {
-        next(new NotFoundError('User cannot be found'));
+        next(new NotFoundError('Пользователь не найден'));
       } else {
         next(err);
       }
     });
 };
 
-module.exports.updateUser = (request, response, next) => {
+module.exports.updateUser = (req, res, next) => {
   const {
     name,
     about,
-  } = request.body;
+  } = req.body;
 
   userSchema
     .findByIdAndUpdate(
-      request.user._id,
+      req.user._id,
       {
         name,
         about,
@@ -68,37 +68,37 @@ module.exports.updateUser = (request, response, next) => {
     )
     .then((user) => {
       if (!user) {
-        throw new NotFoundError('User cannot be found');
+        throw new NotFoundError('Пользователь не найден');
       }
-      response.status(200)
+      res.status(200)
         .send(user);
     })
     .catch((err) => {
       if (err.name === 'ValidationError' || err.name === 'CastError') {
-        next(BadRequestError('Incorrect data'));
+        next(BadRequestError('Переданы некорректные данные'));
       } else {
         next(err);
       }
     });
 };
 
-module.exports.updateAvatar = (request, response, next) => {
-  const { avatar } = request.body;
+module.exports.updateAvatar = (req, res, next) => {
+  const { avatar } = req.body;
 
   userSchema
     .findByIdAndUpdate(
-      request.user._id,
+      req.user._id,
       { avatar },
       {
         new: true,
         runValidators: true,
       },
     )
-    .then((user) => response.status(200)
+    .then((user) => res.status(200)
       .send(user))
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
-        next(new BadRequestError('Incorrect data'));
+        next(new BadRequestError('Переданы некорректные данные'));
       } else {
         next(err);
       }

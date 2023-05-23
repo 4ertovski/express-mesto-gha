@@ -13,9 +13,10 @@ const {
   createUser,
   login,
 } = require('./controllers/auth');
+const errorHandler = require('./middlewares/errorHandler');
 
 const {
-  MONGO_URL = 'mongodb://localhost:27017/mestodb',
+  MONGO_URL = 'mongodb://127.0.0.1:27017/mestodb',
   PORT = 3000,
 } = process.env;
 
@@ -29,19 +30,7 @@ app.use(router);
 app.use(helmet());
 app.use(errors());
 
-app.use((error, request, response, next) => {
-  const {
-    status = 500,
-    message,
-  } = error;
-  response.status(status)
-    .send({
-      message: status === 500
-        ? 'На сервере произошла ошибка'
-        : message,
-    });
-  next();
-});
+app.use(errorHandler);
 
 async function start() {
   try {

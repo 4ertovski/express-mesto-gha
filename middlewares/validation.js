@@ -7,13 +7,13 @@ const BadRequestError = require('../errors/BadRequestError');
 
 const urlValidation = (url) => {
   if (isUrl(url)) return url;
-  throw new BadRequestError('Incorrect URL');
+  throw new BadRequestError('Некорректный адрес URL');
 };
 
-const IdValidation = (id) => {
+const validationId = (id) => {
   const regex = /^[0-9a-fA-F]{24}$/;
   if (regex.test(id)) return id;
-  throw new BadRequestError('Incorrect id');
+  throw new BadRequestError('Передан некорретный id');
 };
 
 module.exports.createUserValidation = celebrate({
@@ -35,12 +35,12 @@ module.exports.createUserValidation = celebrate({
     }),
 });
 
-module.exports.cardByIdValidation = celebrate({
+module.exports.validationCardById = celebrate({
   params: Joi.object()
     .keys({
       cardId: Joi.string()
         .required()
-        .custom(IdValidation),
+        .custom(validationId),
     }),
 });
 
@@ -55,7 +55,7 @@ module.exports.loginValidation = celebrate({
     }),
 });
 
-module.exports.validationUpdateAvatar = celebrate({
+module.exports.updateAvatarValidation = celebrate({
   body: Joi.object()
     .keys({
       avatar: Joi.string()
@@ -96,6 +96,6 @@ module.exports.userIdValidation = celebrate({
     .keys({
       userId: Joi.string()
         .required()
-        .custom(IdValidation),
+        .custom(validationId),
     }),
 });
