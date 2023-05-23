@@ -1,5 +1,5 @@
 const { celebrate, Joi } = require('celebrate');
-const isURL = require('validator/es/lib/isURL');
+const isURL = require('validator/lib/isURL');
 const BadRequestError = require('../errors/BadRequestError');
 const { urlRegExp } = require('../utils/variables');
 
