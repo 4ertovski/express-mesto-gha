@@ -34,14 +34,3 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`start server on port ${PORT}`);
 });
-
-/* async function start() {
-  try {
-    await mongoose.connect(MONGO_URL);
-    await app.listen(PORT);
-  } catch (err) {
-    console.log(err);
-  }
-}
-start()
-  .then(() => console.log(`App has been successfully started!\n${MONGO_URL}\nPort: ${PORT}`)); */
