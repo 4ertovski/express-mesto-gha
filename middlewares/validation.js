@@ -40,6 +40,7 @@ module.exports.validationCardById = celebrate({
     .keys({
       cardId: Joi.string()
         .required()
+        .hex()
         .custom(validationId),
     }),
 });
@@ -96,6 +97,7 @@ module.exports.userIdValidation = celebrate({
     .keys({
       userId: Joi.string()
         .required()
+        .hex()
         .custom(validationId),
     }),
 });

@@ -41,7 +41,7 @@ module.exports.deleteCard = (req, res, next) => {
   cardSchema.findById(cardId)
     .then((card) => {
       if (!card) {
-        throw new NotFoundError('Пользователь не найден');
+        throw new NotFoundError('Карточка не найдена');
       }
       if (!card.owner.equals(req.user._id)) {
         return next(new ForbiddenError('Вы не можете удалить чужую карточку'));
@@ -60,7 +60,7 @@ module.exports.addLike = (req, res, next) => {
     )
     .then((card) => {
       if (!card) {
-        throw new NotFoundError('Пользователь не найден');
+        throw new NotFoundError('Карточка не найдена');
       }
       res.send({ data: card });
     })
